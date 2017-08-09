@@ -134,7 +134,8 @@
       context.lineTo(to[0], to[1]);
       context.stroke();
     }
-  //Draw a rectange of height and width from top left corner position. Accepts [x,y] for pos, x, y for w and h
+  //Draw a rectange of height and width from top left corner position. 
+  //Accepts ([x,y], w, h) for position, width, and height.
     function drawrect(position, width, height) {
       context.beginPath();
       context.moveTo(position[0], position[1]);
