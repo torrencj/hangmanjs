@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Hangman</title>
+    <script src="words.js"></script>
+    <script src="allowedinput.js"></script>
+
+
+</head>
+
+<body>
+    <h1 id="mytext"></h1>
+    <canvas id="gameCanvas" height="600" width="600" style="border:1px solid black"></canvas>
+
+
+    <script type="text/javascript">
+        var canvas = document.getElementById('gameCanvas');
+        var context = canvas.getContext('2d');
+
+        var width = document.getElementById('gameCanvas').offsetWidth;
+        var height = document.getElementById('gameCanvas').offsetHeight;
+
+        //draw welcome message and set gamestate
+        var gamestate = 0;
+
+        context.font = 'italic 30pt Sans-Serif';
+        context.fillText('Welcome to hangman', 100, 60);
+        drawgallows(gamestate);
+
+        //draw stuff out as you type. cursor is a location.
+        var cursor = 100;
+
+        // event keypresses
+        var userGuess;
+
+        // drawGrid()
+        // drawgallows(0);
+        // drawgallows(1);
+        // drawgallows(2);
+        // drawgallows(3);
+        // drawgallows(4);
+        // drawgallows(5);
+
+        var word = pickword(dictionary);
+
+        //only used to track when all the letters are revealed.
+        var wordLength = word.length;
+
+        // var word = "astrophysics";
+
+        context.font = '20pt Monospace';
+        var guessed = [];
+
+        drawboard([100, 500], word);
+
+        document.onkeydown = function(event) {
+
+            if (allowedInput.indexOf(event.key) != -1 && gamestate < 5) {
+                updateBoard(event.key);
+
+                //show the guesses as you type them:
+                context.fillText(event.key, cursor, 550);
+                cursor += 20;
+            }
+        };
+
+
+        function updateBoard(userGuess) {
+            userIndex = word.indexOf(userGuess);
+
+            if (wordLength > 0 && userIndex != -1 && guessed.indexOf(userGuess) == -1) { //if the userguess matches and hasn't been guessed before
+                guessed.push(userGuess);
+                wordLength--;
+                context.fillText(word[userIndex], (100 + (userIndex * 20)), 490); //draw the first one
+
+                for (var z = userIndex + 1; z < word.length; z++) { //go through all rest of the letters in word
+                    if (word[z] == userGuess) { //draw it if it's a match.
+                        context.fillText(word[z], (100 + (z * 20)), 490);
+                        wordLength--;
+                    }
+                }
+            } else if (wordLength > 0 && userIndex == -1) {
+                gamestate++;
+                drawgallows(gamestate);
+            }
+            //add the guess to the guessed array.
+            if (wordLength > 0 && guessed.indexOf(userGuess) == -1) {
+                guessed.push(userGuess);
+            }
+
+            //Checking for win state
+            if (wordLength == 0) {
+                context.fillText("Winner!", 350, 300);
+                wordLength--;
+            }
+        }
+
+        function drawboard(location, word) {
+
+            for (var i = 0; i < word.length; i++) {
+                context.fillText('_ ', (location[0] + i * 20), location[1]);
+            }
+            // context.fillText(word, 100, 550);  //draws the word to the board... TODO
+        }
+
+        //draws and updates the gallows based on gamestate
+        function drawgallows(gamestate) {
+            if (gamestate == 0) { //basic setup
+                drawrect([100, 100], 15, 300);
+                drawrect([115, 100], 150, 15);
+                drawline([265, 115], [265, 150]);
+                context.beginPath();
+                context.arc(265, 170, 20, 0, 2 * Math.PI);
+                context.stroke();
+            } else if (gamestate == 1) {
+                drawline([265, 190], [265, 250]); //body
+            } else if (gamestate == 2) {
+                drawline([265, 190], [235, 250]); //left arm
+            } else if (gamestate == 3) {
+                drawline([265, 190], [295, 250]); //right arm
+            } else if (gamestate == 4) {
+                drawline([265, 250], [235, 300]); //left leg
+            } else if (gamestate == 5) {
+                drawline([265, 250], [295, 300]); //right leg
+                context.fillText("You lose...", 350, 300);
+                context.fillText("The word was: ", 350, 350);
+                context.fillText(word, 350, 400);
+            }
+        }
+
+        //from and to are a pair of coords [x,y]
+        function drawline(from, to) {
+            context.beginPath();
+            context.moveTo(from[0], from[1]);
+            context.lineTo(to[0], to[1]);
+            context.stroke();
+        }
+        //draw a rectange of height and width from position. Accepts [x,y] for pos, x, y for h and w
+        function drawrect(position, width, height) {
+            context.beginPath();
+            context.moveTo(position[0], position[1]);
+            context.lineTo(position[0] + width, position[1]);
+            context.lineTo(position[0] + width, position[1] + height);
+            context.lineTo(position[0], position[1] + height);
+            context.lineTo(position[0], position[1]);
+            context.stroke();
+
+        }
+
+        function drawGrid() {
+            for (var i = 0; i < 6; i++) {
+                drawline([i * 100, 0], [i * 100, height]);
+            }
+
+            for (var i = 0; i < 6; i++) {
+                drawline([0, i * 100], [width, i * 100]);
+            }
+        }
+
+        function pickword(dictionary) {
+            return dictionary[Math.floor(Math.random() * (dictionary.length))];
+        }
+    </script>
+</body>
+
+
+</html>
